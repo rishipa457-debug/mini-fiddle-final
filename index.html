@@ -1,31 +1,74 @@
-<script>
-const tabButtons = document.querySelectorAll(".tab-btn");
-const tabContents = document.querySelectorAll(".tab-content");
-const preview = document.getElementById("preview");
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mini Fiddle</title>
+  <style>
+    body { margin: 0; font-family: Arial, sans-serif; display: flex; flex-direction: column; height: 100vh; }
+    header { background: #333; color: white; padding: 10px; text-align: center; }
+    .editor-container { display: flex; flex: 1; overflow: hidden; }
+    .tabs { width: 50%; display: flex; flex-direction: column; }
+    .tab-buttons { display: flex; background: #444; }
+    .tab-buttons button { flex: 1; padding: 10px; border: none; background: #444; color: white; cursor: pointer; }
+    .tab-buttons button.active { background: #666; }
+    textarea { flex: 1; border: none; padding: 10px; font-family: monospace; font-size: 14px; resize: none; outline: none; }
+    iframe { width: 50%; border: none; }
+    .run-btn { background: #28a745; color: white; padding: 10px; border: none; cursor: pointer; width: 100%; }
+  </style>
+</head>
+<body>
+  <header><h1>Mini Fiddle</h1></header>
 
-// Switch tabs
-tabButtons.forEach(btn => {
-  btn.addEventListener("click", () => {
-    tabButtons.forEach(b => b.classList.remove("active"));
-    btn.classList.add("active");
-    tabContents.forEach(tc => tc.style.display = "none");
-    document.getElementById(btn.dataset.tab).style.display = "block";
-  });
-});
+  <div class="editor-container">
+    <div class="tabs">
+      <div class="tab-buttons">
+        <button class="tab-btn active" data-tab="html">HTML</button>
+        <button class="tab-btn" data-tab="css">CSS</button>
+        <button class="tab-btn" data-tab="js">JS</button>
+      </div>
+      <textarea id="html" class="tab-content"><h1>Hello World</h1></textarea>
+      <textarea id="css" class="tab-content" style="display:none;">h1 { color: red; }</textarea>
+      <textarea id="js" class="tab-content" style="display:none;">console.log("Hello from JS!");</textarea>
+      <button class="run-btn" onclick="updatePreview()">▶ Run</button>
+    </div>
+    <iframe id="preview"></iframe>
+  </div>
 
-// Function to update preview
-function updatePreview() {
-  const html = document.getElementById("html").value;
-  const css = "<style>" + document.getElementById("css").value + "</style>";
-  const js = "<script>" + document.getElementById("js").value + "<\/script>";
-  preview.srcdoc = html + css + js;
-}
+  <script>
+    const tabButtons = document.querySelectorAll(".tab-btn");
+    const tabContents = document.querySelectorAll(".tab-content");
+    const preview = document.getElementById("preview");
 
-// Add event listeners to update preview as user types
-tabContents.forEach(tc => {
-  tc.addEventListener("input", updatePreview);
-});
+    // Switch tabs
+    tabButtons.forEach(btn => {
+      btn.addEventListener("click", () => {
+        tabButtons.forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        tabContents.forEach(tc => tc.style.display = "none");
+        document.getElementById(btn.dataset.tab).style.display = "block";
+      });
+    });
 
-// Initial preview
-updatePreview();
-</script>
+    // Function to update preview
+    function updatePreview() {
+      const html = document.getElementById("html").value;
+      const css = "<style>" + document.getElementById("css").value + "</style>";
+      const js = document.getElementById("js").value;
+
+      preview.srcdoc = html + css; // load HTML+CSS
+
+      // Run JS safely inside iframe
+      preview.onload = () => {
+        preview.contentWindow.eval(js);
+      };
+    }
+
+    // Update preview on typing
+    tabContents.forEach(tc => tc.addEventListener("input", updatePreview));
+
+    // Initial preview
+    updatePreview();
+  </script>
+</body>
+</html>
